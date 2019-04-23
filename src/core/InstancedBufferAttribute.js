@@ -20,7 +20,7 @@ function InstancedBufferAttribute( array, itemSize, normalized, meshPerAttribute
 
 	this._meshPerAttribute = meshPerAttribute || 1;
 
-	this.version2 = 0;
+	this.versionVAO = 0;
 
 }
 
@@ -67,7 +67,7 @@ Object.defineProperties( InstancedBufferAttribute.prototype, {
 		set: function ( value ) {
 
 			this._meshPerAttribute = value;
-			this.version2 ++;
+			this.versionVAO ++;
 
 		}
 
