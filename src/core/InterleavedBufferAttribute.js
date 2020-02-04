@@ -8,13 +8,13 @@ var _vector = new Vector3();
 
 function InterleavedBufferAttribute( interleavedBuffer, itemSize, offset, normalized ) {
 
-	this._data = interleavedBuffer;
-	this._itemSize = itemSize;
-	this._offset = offset;
+	this.name = '';
 
-	this._normalized = normalized === true;
+	this.data = interleavedBuffer;
+	this.itemSize = itemSize;
+	this.offset = offset;
 
-	this.versionVAO = 0;
+	this.normalized = normalized === true;
 
 }
 
@@ -35,74 +35,6 @@ Object.defineProperties( InterleavedBufferAttribute.prototype, {
 		get: function () {
 
 			return this.data.array;
-
-		}
-
-	},
-
-	data: {
-
-		get: function () {
-
-			return this._data;
-
-		},
-
-		set: function ( value ) {
-
-			this._data = value;
-			this.versionVAO ++;
-
-		}
-
-	},
-
-	itemSize: {
-
-		get: function () {
-
-			return this._itemSize;
-
-		},
-
-		set: function ( value ) {
-
-			this._itemSize = value;
-			this.versionVAO ++;
-
-		}
-
-	},
-
-	offset: {
-
-		get: function () {
-
-			return this._offset;
-
-		},
-
-		set: function ( value ) {
-
-			this._offset = value;
-			this.versionVAO ++;
-
-		}
-
-	},
-
-	normalized: {
-
-		get: function () {
-
-			return this._normalized;
-
-		},
-
-		set: function ( value ) {
-
-			this._normalized = value;
-			this.versionVAO ++;
 
 		}
 
@@ -221,6 +153,33 @@ Object.assign( InterleavedBufferAttribute.prototype, {
 		this.data.array[ index + 3 ] = w;
 
 		return this;
+
+	},
+
+	toJSON: function () {
+
+		// deinterleave data and save it as an ordinary buffer attribute for now
+
+		var array = [];
+
+		for ( var i = 0; i < this.count; i ++ ) {
+
+			var index = i * this.data.stride + this.offset;
+
+			for ( var j = 0; j < this.itemSize; j ++ ) {
+
+				array.push( this.data.array[ index + j ] );
+
+			}
+
+		}
+
+		return {
+			itemSize: this.itemSize,
+			type: this.array.constructor.name,
+			array: array,
+			normalized: this.normalized
+		};
 
 	}
 
