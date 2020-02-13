@@ -980,7 +980,7 @@ function WebGLRenderer( parameters ) {
 
 		currentRenderState = renderStates.get( scene, camera );
 		currentRenderState.init();
-		
+
 		_projScreenMatrix.multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse );
 		_frustum.setFromMatrix( _projScreenMatrix );
 
