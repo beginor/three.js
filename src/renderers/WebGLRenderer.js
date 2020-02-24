@@ -2565,7 +2565,9 @@ function WebGLRenderer( parameters ) {
 
 	};
 
-	this.copyTextureToTexture = function ( position, srcTexture, dstTexture, level = 0 ) {
+	this.copyTextureToTexture = function ( position, srcTexture, dstTexture, level ) {
+
+		level = level || 0;
 
 		var width = srcTexture.image.width;
 		var height = srcTexture.image.height;
