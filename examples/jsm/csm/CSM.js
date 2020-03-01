@@ -237,9 +237,6 @@ export class CSM {
 			light.target.position.y += this.lightDirection.y;
 			light.target.position.z += this.lightDirection.z;
 
-			light.shadow.camera.updateMatrixWorld();
-			light.shadow.camera.updateProjectionMatrix();
-
 		}
 
 	}
