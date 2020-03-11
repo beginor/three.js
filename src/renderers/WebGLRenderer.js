@@ -1644,7 +1644,7 @@ function WebGLRenderer( parameters ) {
 
 			var skeleton = object.skeleton;
 
-			if ( skeleton ) {
+			if ( skeleton && !skeleton.disposed ) {
 
 				var bones = skeleton.bones;
 
@@ -1684,6 +1684,9 @@ function WebGLRenderer( parameters ) {
 
 				}
 
+			}
+			else if ( skeleton.disposed ) {
+				console.warn(" skeleton is disposed")
 			}
 
 		}
