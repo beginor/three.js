@@ -1641,12 +1641,12 @@ function WebGLRenderer( parameters ) {
 
 			var skeleton = object.skeleton;
 
-			if ( skeleton && !skeleton.disposed ) {
+			if ( skeleton && ! skeleton.disposed ) {
 
 				var bones = skeleton.bones;
 
 				p_uniforms.setOptional( _gl, object, 'bindMatrix' );
-				p_uniforms.setOptional( _gl, object, 'bindMatrixInverse' );	
+				p_uniforms.setOptional( _gl, object, 'bindMatrixInverse' );
 
 				if ( capabilities.floatVertexTextures ) {
 
@@ -1684,9 +1684,10 @@ function WebGLRenderer( parameters ) {
 
 				}
 
-			}
-			else if ( skeleton.disposed ) {
-				console.warn(" skeleton is disposed")
+			} else if ( skeleton.disposed ) {
+
+				console.warn( " skeleton is disposed" );
+
 			}
 
 		}
