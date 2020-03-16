@@ -2289,6 +2289,7 @@ var GLTFLoader = ( function () {
 
 		if ( targets !== undefined ) {
 
+			var maxDisplacement = new Vector3();
 			var vector = new Vector3();
 
 			for ( var i = 0, il = targets.length; i < il; i ++ ) {
@@ -2310,7 +2311,11 @@ var GLTFLoader = ( function () {
 						vector.setY( Math.max( Math.abs( min[ 1 ] ), Math.abs( max[ 1 ] ) ) );
 						vector.setZ( Math.max( Math.abs( min[ 2 ] ), Math.abs( max[ 2 ] ) ) );
 
-						box.expandByVector( vector );
+						// Note: this assumes that the sum of all weights is at most 1. This isn't quite correct - it's more conservative
+						// to assume that each target can have a max weight of 1. However, for some use cases - notably, when morph targets
+						// are used to implement key-frame animations and as such only two are active at a time - this results in very large
+						// boxes. So for now we make a box that's sometimes a touch too small but is hopefully mostly of reasonable size.
+						maxDisplacement.max( vector );
 
 					} else {
 
@@ -2321,6 +2326,9 @@ var GLTFLoader = ( function () {
 				}
 
 			}
+
+			// As per comment above this box isn't conservative, but has a reasonable size for a very large number of morph targets.
+			box.expandByVector( maxDisplacement );
 
 		}
 
