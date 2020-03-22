@@ -1893,7 +1893,7 @@ var GLTFLoader = ( function () {
 		var options = this.options;
 		var textureLoader = this.textureLoader;
 
-		var URL = window.URL || window.webkitURL;
+		var URL = self.URL || self.webkitURL;
 
 		var textureDef = json.textures[ textureIndex ];
 
