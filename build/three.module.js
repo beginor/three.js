@@ -360,6 +360,7 @@ Object.assign( EventDispatcher.prototype, {
 
 			event.target = this;
 
+			// Make a copy, in case listeners are removed while iterating.
 			var array = listenerArray.slice( 0 );
 
 			for ( var i = 0, l = array.length; i < l; i ++ ) {
@@ -3188,6 +3189,17 @@ Object.assign( Quaternion.prototype, {
 		array[ offset + 3 ] = this._w;
 
 		return array;
+
+	},
+
+	fromBufferAttribute: function ( attribute, index ) {
+
+		this._x = attribute.getX( index );
+		this._y = attribute.getY( index );
+		this._z = attribute.getZ( index );
+		this._w = attribute.getW( index );
+
+		return this;
 
 	},
 
@@ -46010,7 +46022,7 @@ function SpotLightHelper( light, color ) {
 
 	geometry.setAttribute( 'position', new Float32BufferAttribute( positions, 3 ) );
 
-	var material = new LineBasicMaterial( { fog: false } );
+	var material = new LineBasicMaterial( { fog: false, toneMapped: false } );
 
 	this.cone = new LineSegments( geometry, material );
 	this.add( this.cone );
@@ -46116,7 +46128,7 @@ function SkeletonHelper( object ) {
 	geometry.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
 	geometry.setAttribute( 'color', new Float32BufferAttribute( colors, 3 ) );
 
-	var material = new LineBasicMaterial( { vertexColors: true, depthTest: false, depthWrite: false, transparent: true } );
+	var material = new LineBasicMaterial( { vertexColors: true, depthTest: false, depthWrite: false, toneMapped: false, transparent: true } );
 
 	LineSegments.call( this, geometry, material );
 
@@ -46181,7 +46193,7 @@ function PointLightHelper( light, sphereSize, color ) {
 	this.color = color;
 
 	var geometry = new SphereBufferGeometry( sphereSize, 4, 2 );
-	var material = new MeshBasicMaterial( { wireframe: true, fog: false } );
+	var material = new MeshBasicMaterial( { wireframe: true, fog: false, toneMapped: false } );
 
 	Mesh.call( this, geometry, material );
 
@@ -46279,7 +46291,7 @@ function HemisphereLightHelper( light, size, color ) {
 	var geometry = new OctahedronBufferGeometry( size );
 	geometry.rotateY( Math.PI * 0.5 );
 
-	this.material = new MeshBasicMaterial( { wireframe: true, fog: false } );
+	this.material = new MeshBasicMaterial( { wireframe: true, fog: false, toneMapped: false } );
 	if ( this.color === undefined ) this.material.vertexColors = true;
 
 	var position = geometry.getAttribute( 'position' );
@@ -46369,7 +46381,7 @@ function GridHelper( size, divisions, color1, color2 ) {
 	geometry.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
 	geometry.setAttribute( 'color', new Float32BufferAttribute( colors, 3 ) );
 
-	var material = new LineBasicMaterial( { vertexColors: true } );
+	var material = new LineBasicMaterial( { vertexColors: true, toneMapped: false } );
 
 	LineSegments.call( this, geometry, material );
 
@@ -46476,7 +46488,7 @@ function PolarGridHelper( radius, radials, circles, divisions, color1, color2 ) 
 	geometry.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
 	geometry.setAttribute( 'color', new Float32BufferAttribute( colors, 3 ) );
 
-	var material = new LineBasicMaterial( { vertexColors: true } );
+	var material = new LineBasicMaterial( { vertexColors: true, toneMapped: false } );
 
 	LineSegments.call( this, geometry, material );
 
@@ -46518,7 +46530,7 @@ function DirectionalLightHelper( light, size, color ) {
 		- size, size, 0
 	], 3 ) );
 
-	var material = new LineBasicMaterial( { fog: false } );
+	var material = new LineBasicMaterial( { fog: false, toneMapped: false } );
 
 	this.lightPlane = new Line( geometry, material );
 	this.add( this.lightPlane );
@@ -46586,7 +46598,7 @@ var _camera = new Camera();
 function CameraHelper( camera ) {
 
 	var geometry = new BufferGeometry();
-	var material = new LineBasicMaterial( { color: 0xffffff, vertexColors: true } );
+	var material = new LineBasicMaterial( { color: 0xffffff, vertexColors: true, toneMapped: false } );
 
 	var vertices = [];
 	var colors = [];
@@ -46783,7 +46795,7 @@ function BoxHelper( object, color ) {
 	geometry.setIndex( new BufferAttribute( indices, 1 ) );
 	geometry.setAttribute( 'position', new BufferAttribute( positions, 3 ) );
 
-	LineSegments.call( this, geometry, new LineBasicMaterial( { color: color } ) );
+	LineSegments.call( this, geometry, new LineBasicMaterial( { color: color, toneMapped: false } ) );
 
 	this.matrixAutoUpdate = false;
 
@@ -46895,7 +46907,7 @@ function Box3Helper( box, color ) {
 
 	geometry.setAttribute( 'position', new Float32BufferAttribute( positions, 3 ) );
 
-	LineSegments.call( this, geometry, new LineBasicMaterial( { color: color } ) );
+	LineSegments.call( this, geometry, new LineBasicMaterial( { color: color, toneMapped: false } ) );
 
 	this.geometry.computeBoundingSphere();
 
@@ -46940,7 +46952,7 @@ function PlaneHelper( plane, size, hex ) {
 	geometry.setAttribute( 'position', new Float32BufferAttribute( positions, 3 ) );
 	geometry.computeBoundingSphere();
 
-	Line.call( this, geometry, new LineBasicMaterial( { color: color } ) );
+	Line.call( this, geometry, new LineBasicMaterial( { color: color, toneMapped: false } ) );
 
 	//
 
@@ -46950,7 +46962,7 @@ function PlaneHelper( plane, size, hex ) {
 	geometry2.setAttribute( 'position', new Float32BufferAttribute( positions2, 3 ) );
 	geometry2.computeBoundingSphere();
 
-	this.add( new Mesh( geometry2, new MeshBasicMaterial( { color: color, opacity: 0.2, transparent: true, depthWrite: false } ) ) );
+	this.add( new Mesh( geometry2, new MeshBasicMaterial( { color: color, opacity: 0.2, transparent: true, depthWrite: false, toneMapped: false } ) ) );
 
 }
 
@@ -47017,11 +47029,11 @@ function ArrowHelper( dir, origin, length, color, headLength, headWidth ) {
 
 	this.position.copy( origin );
 
-	this.line = new Line( _lineGeometry, new LineBasicMaterial( { color: color } ) );
+	this.line = new Line( _lineGeometry, new LineBasicMaterial( { color: color, toneMapped: false } ) );
 	this.line.matrixAutoUpdate = false;
 	this.add( this.line );
 
-	this.cone = new Mesh( _coneGeometry, new MeshBasicMaterial( { color: color } ) );
+	this.cone = new Mesh( _coneGeometry, new MeshBasicMaterial( { color: color, toneMapped: false } ) );
 	this.cone.matrixAutoUpdate = false;
 	this.add( this.cone );
 
@@ -47120,7 +47132,7 @@ function AxesHelper( size ) {
 	geometry.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
 	geometry.setAttribute( 'color', new Float32BufferAttribute( colors, 3 ) );
 
-	var material = new LineBasicMaterial( { vertexColors: true } );
+	var material = new LineBasicMaterial( { vertexColors: true, toneMapped: false } );
 
 	LineSegments.call( this, geometry, material );
 
