@@ -2167,7 +2167,7 @@ THREE.GLTFLoader = ( function () {
 
 		if ( material.aoMap && geometry.attributes.uv2 === undefined && geometry.attributes.uv !== undefined ) {
 
-			geometry.setAttribute( 'uv2', new THREE.BufferAttribute( geometry.attributes.uv.array, 2 ) );
+			geometry.setAttribute( 'uv2', geometry.attributes.uv );
 
 		}
 
