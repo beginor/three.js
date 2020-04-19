@@ -1195,7 +1195,7 @@ THREE.TransformControlsGizmo = function () {
 
 			} else {
 
-				factor = this.worldPosition.distanceTo( this.cameraPosition ) * Math.min( 1.9 * Math.tan( Math.PI * this.camera.getEffectiveFOV() / 360 ), 7 );
+				factor = this.worldPosition.distanceTo( this.cameraPosition ) * Math.min( 1.9 * Math.tan( Math.PI * this.camera.fov / 360 ) / this.camera.zoom, 7 );
 
 			}
 
