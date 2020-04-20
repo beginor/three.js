@@ -21,9 +21,11 @@ Object.assign( Loader.prototype, {
 
 	loadAsync: function ( url, onProgress ) {
 
-		return new Promise( ( resolve, reject ) => {
+		var scope = this;
 
-			this.load( url, resolve, onProgress, reject );
+		return new Promise( function ( resolve, reject ) {
+
+			scope.load( url, resolve, onProgress, reject );
 
 		} );
 
