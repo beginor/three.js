@@ -127,6 +127,7 @@ export function MultiMaterial( materials ) {
 		return materials.slice();
 
 	};
+
 	return materials;
 
 }
@@ -1313,6 +1314,7 @@ Object.assign( BufferGeometry.prototype, {
 			console.warn( 'THREE.BufferGeometry: .addDrawCall() no longer supports indexOffset.' );
 
 		}
+
 		console.warn( 'THREE.BufferGeometry: .addDrawCall() is now .addGroup().' );
 		this.addGroup( start, count );
 
