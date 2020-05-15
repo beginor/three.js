@@ -3287,8 +3287,6 @@ var GLTFLoader = ( function () {
 
 			assignExtrasToUserData( node, nodeDef );
 
-			parser.associations.set( node, { type: 'nodes', index: nodeIndex } );
-
 			if ( nodeDef.extensions ) addUnknownExtensionsToUserData( extensions, node, nodeDef );
 
 			if ( nodeDef.matrix !== undefined ) {
@@ -3318,6 +3316,8 @@ var GLTFLoader = ( function () {
 				}
 
 			}
+
+			parser.associations.set( node, { type: 'nodes', index: nodeIndex } );
 
 			return node;
 
