@@ -98,7 +98,7 @@ function CubeCamera( near, far, renderTarget ) {
 		renderer.setRenderTarget( currentRenderTarget );
 
 		renderer.xr.enabled = currentXrEnabled;
-		
+
 	};
 
 	this.clear = function ( renderer, color, depth, stencil ) {
