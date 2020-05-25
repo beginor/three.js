@@ -42,7 +42,7 @@ THREE.VRMLoader = ( function () {
 
 		setDRACOLoader: function ( dracoLoader ) {
 
-			this.glTFLoader.setDRACOLoader( dracoLoader );
+			this.gltfLoader.setDRACOLoader( dracoLoader );
 			return this;
 
 		},
