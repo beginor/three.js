@@ -286,7 +286,25 @@ THREE.XLoader = ( function () {
 				loader.setResponseType( 'arraybuffer' );
 				loader.load( this.url, function ( response ) {
 
-					_this.parse( response, onLoad );
+					try {
+
+						_this.parse( response, onLoad );
+
+					} catch ( e ) {
+
+						if ( onError ) {
+
+							onError( e );
+
+						} else {
+
+							console.error( e );
+
+						}
+
+						_this.manager.itemError( _this.url );
+
+					}
 
 				}, onProgress, onError );
 
