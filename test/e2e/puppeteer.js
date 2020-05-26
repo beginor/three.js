@@ -8,8 +8,8 @@ try {
 
 } catch {
 
-	console.log( '\x1b[31mError! You not installed dependencies. Please run `npm i --prefix test`\x1b[37m' );
-	process.exit( 1 );
+	console.log( 'Error: Can\'t find Puppeteer. Run `npm install --prefix test`.' );
+	process.exit( 0 );
 
 }
 
@@ -192,6 +192,7 @@ const pup = puppeteer.launch( {
 									console.log( 'Warning. Render timeout exceeded...' );
 
 								}
+
 								clearInterval( waitingLoop );
 								resolve();
 
@@ -227,9 +228,9 @@ const pup = puppeteer.launch( {
 				/* Make screenshots */
 
 				attemptId = maxAttemptId;
-				let bitmap= ( await jimp.read( await page.screenshot() ) )
-						.scale( 1 / viewScale ).quality( jpgQuality )
-						.write( `./examples/screenshots/${ file }.jpg` ).bitmap;
+				let bitmap = ( await jimp.read( await page.screenshot() ) )
+					.scale( 1 / viewScale ).quality( jpgQuality )
+					.write( `./examples/screenshots/${ file }.jpg` ).bitmap;
 
 				printImage( bitmap, console );
 				console.green( `file: ${ file } generated` );
@@ -262,8 +263,8 @@ const pup = puppeteer.launch( {
 					continue;
 
 				}
-				numFailedPixels /= actual.width * actual.height;
 
+				numFailedPixels /= actual.width * actual.height;
 
 				/* Print results */
 
@@ -308,7 +309,7 @@ const pup = puppeteer.launch( {
 
 		if ( failedScreenshots.length > 1 ) {
 
-			console.red( 'List of failed screenshots: ' + failedScreenshots.join(' ') );
+			console.red( 'List of failed screenshots: ' + failedScreenshots.join( ' ' ) );
 
 		} else {
 
