@@ -169,6 +169,8 @@ function WebGLRenderer( parameters ) {
 
 		_vector3 = new Vector3();
 
+	const _emptyScene = { background: null, fog: null, environment: null, overrideMaterial: null, isScene: true };
+
 	function getTargetPixelRatio() {
 
 		return _currentRenderTarget === null ? _pixelRatio : 1;
@@ -709,11 +711,9 @@ function WebGLRenderer( parameters ) {
 
 	};
 
-	const tempScene = new Scene();
-
 	this.renderBufferDirect = function ( camera, scene, geometry, material, object, group ) {
 
-		if ( scene === null ) scene = tempScene; // renderBufferDirect second parameter used to be fog (could be null)
+		if ( scene === null ) scene = _emptyScene; // renderBufferDirect second parameter used to be fog (could be null)
 
 		const frontFaceCW = ( object.isMesh && object.matrixWorld.determinant() < 0 );
 
@@ -957,14 +957,14 @@ function WebGLRenderer( parameters ) {
 
 		}
 
-		if ( ! ( camera && camera.isCamera ) ) {
+		if ( camera !== undefined && camera.isCamera !== true ) {
 
 			console.error( 'THREE.WebGLRenderer.render: camera is not an instance of THREE.Camera.' );
 			return;
 
 		}
 
-		if ( _isContextLost ) return;
+		if ( _isContextLost === true ) return;
 
 		// reset caching for this frame
 
@@ -980,14 +980,14 @@ function WebGLRenderer( parameters ) {
 
 		if ( camera.parent === null ) camera.updateMatrixWorld();
 
-		if ( xr.enabled && xr.isPresenting ) {
+		if ( xr.enabled === true && xr.isPresenting === true ) {
 
 			camera = xr.getCamera( camera );
 
 		}
 
 		//
-		if ( scene.isScene ) scene.onBeforeRender( _this, scene, camera, renderTarget || _currentRenderTarget );
+		if ( scene.isScene === true ) scene.onBeforeRender( _this, scene, camera, renderTarget || _currentRenderTarget );
 
 		currentRenderState = renderStates.get( scene, camera );
 		currentRenderState.init();
@@ -1013,7 +1013,7 @@ function WebGLRenderer( parameters ) {
 
 		//
 
-		if ( _clippingEnabled ) _clipping.beginShadows();
+		if ( _clippingEnabled === true ) _clipping.beginShadows();
 
 		const shadowsArray = currentRenderState.state.shadowsArray;
 
@@ -1021,11 +1021,11 @@ function WebGLRenderer( parameters ) {
 
 		currentRenderState.setupLights( camera );
 
-		if ( _clippingEnabled ) _clipping.endShadows();
+		if ( _clippingEnabled === true ) _clipping.endShadows();
 
 		//
 
-		if ( this.info.autoReset ) this.info.reset();
+		if ( this.info.autoReset === true ) this.info.reset();
 
 		if ( renderTarget !== undefined ) {
 
@@ -1042,28 +1042,12 @@ function WebGLRenderer( parameters ) {
 		const opaqueObjects = currentRenderList.opaque;
 		const transparentObjects = currentRenderList.transparent;
 
-		if ( scene.overrideMaterial ) {
-
-			const overrideMaterial = scene.overrideMaterial;
-
-			if ( opaqueObjects.length ) renderObjects( opaqueObjects, scene, camera, overrideMaterial );
-			if ( transparentObjects.length ) renderObjects( transparentObjects, scene, camera, overrideMaterial );
-
-		} else {
-
-			// opaque pass (front-to-back order)
-
-			if ( opaqueObjects.length ) renderObjects( opaqueObjects, scene, camera );
-
-			// transparent pass (back-to-front order)
-
-			if ( transparentObjects.length ) renderObjects( transparentObjects, scene, camera );
-
-		}
+		if ( opaqueObjects.length > 0 ) renderObjects( opaqueObjects, scene, camera );
+		if ( transparentObjects.length > 0 ) renderObjects( transparentObjects, scene, camera );
 
 		//
 
-		if ( scene.isScene ) scene.onAfterRender( _this, scene, camera );
+		if ( scene.isScene === true ) scene.onAfterRender( _this, scene, camera );
 
 		//
 
@@ -1219,7 +1203,9 @@ function WebGLRenderer( parameters ) {
 
 	}
 
-	function renderObjects( renderList, scene, camera, overrideMaterial ) {
+	function renderObjects( renderList, scene, camera ) {
+
+		const overrideMaterial = scene.isScene === true ? scene.overrideMaterial : null;
 
 		for ( let i = 0, l = renderList.length; i < l; i ++ ) {
 
@@ -1227,7 +1213,7 @@ function WebGLRenderer( parameters ) {
 
 			const object = renderItem.object;
 			const geometry = renderItem.geometry;
-			const material = overrideMaterial === undefined ? renderItem.material : overrideMaterial;
+			const material = overrideMaterial === null ? renderItem.material : overrideMaterial;
 			const group = renderItem.group;
 
 			if ( camera.isArrayCamera ) {
@@ -1294,6 +1280,8 @@ function WebGLRenderer( parameters ) {
 	}
 
 	function initMaterial( material, scene, object ) {
+
+		if ( scene.isScene !== true ) scene = _emptyScene; // scene could be a Mesh, Line, Points, ...
 
 		const materialProperties = properties.get( material );
 
@@ -1436,6 +1424,8 @@ function WebGLRenderer( parameters ) {
 
 	function setProgram( camera, scene, material, object ) {
 
+		if ( scene.isScene !== true ) scene = _emptyScene; // scene could be a Mesh, Line, Points, ...
+
 		textures.resetTextureUnits();
 
 		const fog = scene.fog;
@@ -1445,9 +1435,9 @@ function WebGLRenderer( parameters ) {
 		const materialProperties = properties.get( material );
 		const lights = currentRenderState.state.lights;
 
-		if ( _clippingEnabled ) {
+		if ( _clippingEnabled === true ) {
 
-			if ( _localClippingEnabled || camera !== _currentCamera ) {
+			if ( _localClippingEnabled === true || camera !== _currentCamera ) {
 
 				const useCache =
 					camera === _currentCamera &&
