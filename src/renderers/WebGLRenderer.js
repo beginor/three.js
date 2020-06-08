@@ -26,7 +26,6 @@ import { Scene } from '../scenes/Scene.js';
 import { WebGLAnimation } from './webgl/WebGLAnimation.js';
 import { WebGLAttributes } from './webgl/WebGLAttributes.js';
 import { WebGLBackground } from './webgl/WebGLBackground.js';
-import { WebGLBindingStates } from './webgl/WebGLBindingStates.js';
 import { WebGLBufferRenderer } from './webgl/WebGLBufferRenderer.js';
 import { WebGLCapabilities } from './webgl/WebGLCapabilities.js';
 import { WebGLClipping } from './webgl/WebGLClipping.js';
@@ -119,55 +118,63 @@ function WebGLRenderer( parameters ) {
 
 	// internal properties
 
-	let _this = this,
+	const _this = this;
 
-		_isContextLost = false,
+	let _isContextLost = false;
 
-		// internal state cache
+	// internal state cache
 
-		_framebuffer = null,
+	let _framebuffer = null;
 
-		_currentActiveCubeFace = 0,
-		_currentActiveMipmapLevel = 0,
-		_currentRenderTarget = null,
-		_currentFramebuffer = null,
-		_currentMaterialId = - 1,
+	let _currentActiveCubeFace = 0;
+	let _currentActiveMipmapLevel = 0;
+	let _currentRenderTarget = null;
+	let _currentFramebuffer = null;
+	let _currentMaterialId = - 1;
 
-		_currentCamera = null,
-		_currentArrayCamera = null,
+	// geometry and program caching
 
-		_currentViewport = new Vector4(),
-		_currentScissor = new Vector4(),
-		_currentScissorTest = null,
+	const _currentGeometryProgram = {
+		geometry: null,
+		program: null,
+		wireframe: false
+	};
 
-		//
+	let _currentCamera = null;
+	let _currentArrayCamera = null;
 
-		_width = _canvas.width,
-		_height = _canvas.height,
+	const _currentViewport = new Vector4();
+	const _currentScissor = new Vector4();
+	let _currentScissorTest = null;
 
-		_pixelRatio = 1,
-		_opaqueSort = null,
-		_transparentSort = null,
+	//
 
-		_viewport = new Vector4( 0, 0, _width, _height ),
-		_scissor = new Vector4( 0, 0, _width, _height ),
-		_scissorTest = false,
+	let _width = _canvas.width;
+	let _height = _canvas.height;
 
-		// frustum
+	let _pixelRatio = 1;
+	let _opaqueSort = null;
+	let _transparentSort = null;
 
-		_frustum = new Frustum(),
+	const _viewport = new Vector4( 0, 0, _width, _height );
+	const _scissor = new Vector4( 0, 0, _width, _height );
+	let _scissorTest = false;
 
-		// clipping
+	// frustum
 
-		_clipping = new WebGLClipping(),
-		_clippingEnabled = false,
-		_localClippingEnabled = false,
+	const _frustum = new Frustum();
 
-		// camera matrices cache
+	// clipping
 
-		_projScreenMatrix = new Matrix4(),
+	const _clipping = new WebGLClipping();
+	let _clippingEnabled = false;
+	let _localClippingEnabled = false;
 
-		_vector3 = new Vector3();
+	// camera matrices cache
+
+	const _projScreenMatrix = new Matrix4();
+
+	const _vector3 = new Vector3();
 
 	const _emptyScene = { background: null, fog: null, environment: null, overrideMaterial: null, isScene: true };
 
@@ -240,7 +247,7 @@ function WebGLRenderer( parameters ) {
 
 	let background, morphtargets, bufferRenderer, indexedBufferRenderer;
 
-	let utils, bindingStates;
+	let utils;
 
 	function initGLContext() {
 
@@ -256,7 +263,6 @@ function WebGLRenderer( parameters ) {
 			extensions.get( 'OES_texture_half_float_linear' );
 			extensions.get( 'OES_standard_derivatives' );
 			extensions.get( 'OES_element_index_uint' );
-			extensions.get( 'OES_vertex_array_object' );
 			extensions.get( 'ANGLE_instanced_arrays' );
 
 		}
@@ -273,11 +279,10 @@ function WebGLRenderer( parameters ) {
 		properties = new WebGLProperties();
 		textures = new WebGLTextures( _gl, extensions, state, properties, capabilities, utils, info );
 		attributes = new WebGLAttributes( _gl, capabilities );
-		bindingStates = new WebGLBindingStates( _gl, extensions, attributes, capabilities );
-		geometries = new WebGLGeometries( _gl, attributes, info, bindingStates );
+		geometries = new WebGLGeometries( _gl, attributes, info );
 		objects = new WebGLObjects( _gl, geometries, attributes, info );
 		morphtargets = new WebGLMorphtargets( _gl );
-		programCache = new WebGLPrograms( _this, extensions, capabilities, bindingStates );
+		programCache = new WebGLPrograms( _this, extensions, capabilities );
 		materials = new WebGLMaterials( properties );
 		renderLists = new WebGLRenderLists();
 		renderStates = new WebGLRenderStates();
@@ -573,7 +578,6 @@ function WebGLRenderer( parameters ) {
 		renderStates.dispose();
 		properties.dispose();
 		objects.dispose();
-		bindingStates.dispose();
 
 		xr.dispose();
 
@@ -652,7 +656,7 @@ function WebGLRenderer( parameters ) {
 
 	this.renderBufferImmediate = function ( object, program ) {
 
-		bindingStates.initAttributes();
+		state.initAttributes();
 
 		const buffers = properties.get( object );
 
@@ -668,7 +672,7 @@ function WebGLRenderer( parameters ) {
 			_gl.bindBuffer( _gl.ARRAY_BUFFER, buffers.position );
 			_gl.bufferData( _gl.ARRAY_BUFFER, object.positionArray, _gl.DYNAMIC_DRAW );
 
-			bindingStates.enableAttribute( programAttributes.position );
+			state.enableAttribute( programAttributes.position );
 			_gl.vertexAttribPointer( programAttributes.position, 3, _gl.FLOAT, false, 0, 0 );
 
 		}
@@ -678,7 +682,7 @@ function WebGLRenderer( parameters ) {
 			_gl.bindBuffer( _gl.ARRAY_BUFFER, buffers.normal );
 			_gl.bufferData( _gl.ARRAY_BUFFER, object.normalArray, _gl.DYNAMIC_DRAW );
 
-			bindingStates.enableAttribute( programAttributes.normal );
+			state.enableAttribute( programAttributes.normal );
 			_gl.vertexAttribPointer( programAttributes.normal, 3, _gl.FLOAT, false, 0, 0 );
 
 		}
@@ -688,7 +692,7 @@ function WebGLRenderer( parameters ) {
 			_gl.bindBuffer( _gl.ARRAY_BUFFER, buffers.uv );
 			_gl.bufferData( _gl.ARRAY_BUFFER, object.uvArray, _gl.DYNAMIC_DRAW );
 
-			bindingStates.enableAttribute( programAttributes.uv );
+			state.enableAttribute( programAttributes.uv );
 			_gl.vertexAttribPointer( programAttributes.uv, 2, _gl.FLOAT, false, 0, 0 );
 
 		}
@@ -698,12 +702,12 @@ function WebGLRenderer( parameters ) {
 			_gl.bindBuffer( _gl.ARRAY_BUFFER, buffers.color );
 			_gl.bufferData( _gl.ARRAY_BUFFER, object.colorArray, _gl.DYNAMIC_DRAW );
 
-			bindingStates.enableAttribute( programAttributes.color );
+			state.enableAttribute( programAttributes.color );
 			_gl.vertexAttribPointer( programAttributes.color, 3, _gl.FLOAT, false, 0, 0 );
 
 		}
 
-		bindingStates.disableUnusedAttributes();
+		state.disableUnusedAttributes();
 
 		_gl.drawArrays( _gl.TRIANGLES, 0, object.count );
 
@@ -720,6 +724,33 @@ function WebGLRenderer( parameters ) {
 		const program = setProgram( camera, scene, material, object );
 
 		state.setMaterial( material, frontFaceCW );
+
+		let updateBuffers = false;
+
+		if ( _currentGeometryProgram.geometry !== geometry.id ||
+			_currentGeometryProgram.program !== program.id ||
+			_currentGeometryProgram.wireframe !== ( material.wireframe === true ) ) {
+
+			_currentGeometryProgram.geometry = geometry.id;
+			_currentGeometryProgram.program = program.id;
+			_currentGeometryProgram.wireframe = material.wireframe === true;
+			updateBuffers = true;
+
+		}
+
+		if ( material.morphTargets || material.morphNormals ) {
+
+			morphtargets.update( object, geometry, material, program );
+
+			updateBuffers = true;
+
+		}
+
+		if ( object.isInstancedMesh === true ) {
+
+			updateBuffers = true;
+
+		}
 
 		//
 
@@ -749,14 +780,6 @@ function WebGLRenderer( parameters ) {
 
 		}
 
-		if ( material.morphTargets || material.morphNormals ) {
-
-			morphtargets.update( object, geometry, material, program );
-
-		}
-
-		bindingStates.setup( object, material, program, geometry, index );
-
 		let attribute;
 		let renderer = bufferRenderer;
 
@@ -766,6 +789,18 @@ function WebGLRenderer( parameters ) {
 
 			renderer = indexedBufferRenderer;
 			renderer.setIndex( attribute );
+
+		}
+
+		if ( updateBuffers ) {
+
+			setupVertexAttributes( object, geometry, material, program );
+
+			if ( index !== null ) {
+
+				_gl.bindBuffer( _gl.ELEMENT_ARRAY_BUFFER, attribute.buffer );
+
+			}
 
 		}
 
@@ -850,6 +885,153 @@ function WebGLRenderer( parameters ) {
 		}
 
 	};
+
+	function setupVertexAttributes( object, geometry, material, program ) {
+
+		if ( capabilities.isWebGL2 === false && ( object.isInstancedMesh || geometry.isInstancedBufferGeometry ) ) {
+
+			if ( extensions.get( 'ANGLE_instanced_arrays' ) === null ) return;
+
+		}
+
+		state.initAttributes();
+
+		const geometryAttributes = geometry.attributes;
+
+		const programAttributes = program.getAttributes();
+
+		const materialDefaultAttributeValues = material.defaultAttributeValues;
+
+		for ( const name in programAttributes ) {
+
+			const programAttribute = programAttributes[ name ];
+
+			if ( programAttribute >= 0 ) {
+
+				const geometryAttribute = geometryAttributes[ name ];
+
+				if ( geometryAttribute !== undefined ) {
+
+					const normalized = geometryAttribute.normalized;
+					const size = geometryAttribute.itemSize;
+
+					const attribute = attributes.get( geometryAttribute );
+
+					// TODO Attribute may not be available on context restore
+
+					if ( attribute === undefined ) continue;
+
+					const buffer = attribute.buffer;
+					const type = attribute.type;
+					const bytesPerElement = attribute.bytesPerElement;
+
+					if ( geometryAttribute.isInterleavedBufferAttribute ) {
+
+						const data = geometryAttribute.data;
+						const stride = data.stride;
+						const offset = geometryAttribute.offset;
+
+						if ( data && data.isInstancedInterleavedBuffer ) {
+
+							state.enableAttributeAndDivisor( programAttribute, data.meshPerAttribute );
+
+							if ( geometry._maxInstanceCount === undefined ) {
+
+								geometry._maxInstanceCount = data.meshPerAttribute * data.count;
+
+							}
+
+						} else {
+
+							state.enableAttribute( programAttribute );
+
+						}
+
+						_gl.bindBuffer( _gl.ARRAY_BUFFER, buffer );
+						state.vertexAttribPointer( programAttribute, size, type, normalized, stride * bytesPerElement, offset * bytesPerElement );
+
+					} else {
+
+						if ( geometryAttribute.isInstancedBufferAttribute ) {
+
+							state.enableAttributeAndDivisor( programAttribute, geometryAttribute.meshPerAttribute );
+
+							if ( geometry._maxInstanceCount === undefined ) {
+
+								geometry._maxInstanceCount = geometryAttribute.meshPerAttribute * geometryAttribute.count;
+
+							}
+
+						} else {
+
+							state.enableAttribute( programAttribute );
+
+						}
+
+						_gl.bindBuffer( _gl.ARRAY_BUFFER, buffer );
+						state.vertexAttribPointer( programAttribute, size, type, normalized, 0, 0 );
+
+					}
+
+				} else if ( name === 'instanceMatrix' ) {
+
+					const attribute = attributes.get( object.instanceMatrix );
+
+					// TODO Attribute may not be available on context restore
+
+					if ( attribute === undefined ) continue;
+
+					const buffer = attribute.buffer;
+					const type = attribute.type;
+
+					state.enableAttributeAndDivisor( programAttribute + 0, 1 );
+					state.enableAttributeAndDivisor( programAttribute + 1, 1 );
+					state.enableAttributeAndDivisor( programAttribute + 2, 1 );
+					state.enableAttributeAndDivisor( programAttribute + 3, 1 );
+
+					_gl.bindBuffer( _gl.ARRAY_BUFFER, buffer );
+
+					_gl.vertexAttribPointer( programAttribute + 0, 4, type, false, 64, 0 );
+					_gl.vertexAttribPointer( programAttribute + 1, 4, type, false, 64, 16 );
+					_gl.vertexAttribPointer( programAttribute + 2, 4, type, false, 64, 32 );
+					_gl.vertexAttribPointer( programAttribute + 3, 4, type, false, 64, 48 );
+
+				} else if ( materialDefaultAttributeValues !== undefined ) {
+
+					const value = materialDefaultAttributeValues[ name ];
+
+					if ( value !== undefined ) {
+
+						switch ( value.length ) {
+
+							case 2:
+								_gl.vertexAttrib2fv( programAttribute, value );
+								break;
+
+							case 3:
+								_gl.vertexAttrib3fv( programAttribute, value );
+								break;
+
+							case 4:
+								_gl.vertexAttrib4fv( programAttribute, value );
+								break;
+
+							default:
+								_gl.vertexAttrib1fv( programAttribute, value );
+
+						}
+
+					}
+
+				}
+
+			}
+
+		}
+
+		state.disableUnusedAttributes();
+
+	}
 
 	// Compile
 
@@ -968,7 +1150,9 @@ function WebGLRenderer( parameters ) {
 
 		// reset caching for this frame
 
-		bindingStates.resetDefaultState();
+		_currentGeometryProgram.geometry = null;
+		_currentGeometryProgram.program = null;
+		_currentGeometryProgram.wireframe = false;
 		_currentMaterialId = - 1;
 		_currentCamera = null;
 
@@ -1264,7 +1448,9 @@ function WebGLRenderer( parameters ) {
 
 			state.setMaterial( material );
 
-			bindingStates.reset();
+			_currentGeometryProgram.geometry = null;
+			_currentGeometryProgram.program = null;
+			_currentGeometryProgram.wireframe = false;
 
 			renderObjectImmediate( object, program );
 
