@@ -17,7 +17,11 @@ THREE.GLTFLoader = ( function () {
 		this.ddsLoader = null;
 
 		this.pluginCallbacks = [];
-		this.register( function ( parser ) { return new GLTFMaterialsClearcoatExtension( parser ); } );
+		this.register( function ( parser ) {
+
+			return new GLTFMaterialsClearcoatExtension( parser );
+
+		} );
 
 	}
 
@@ -116,7 +120,7 @@ THREE.GLTFLoader = ( function () {
 
 		register: function ( callback ) {
 
-			if ( this.pluginCallbacks.indexOf( callback ) === -1 ) {
+			if ( this.pluginCallbacks.indexOf( callback ) === - 1 ) {
 
 				this.pluginCallbacks.push( callback );
 
@@ -128,7 +132,7 @@ THREE.GLTFLoader = ( function () {
 
 		unregister: function ( callback ) {
 
-			if ( this.pluginCallbacks.indexOf( callback ) !== -1 ) {
+			if ( this.pluginCallbacks.indexOf( callback ) !== - 1 ) {
 
 				this.pluginCallbacks.splice( this.pluginCallbacks.indexOf( callback ), 1 );
 
@@ -465,7 +469,7 @@ THREE.GLTFLoader = ( function () {
 
 	}
 
-	GLTFMaterialsClearcoatExtension.prototype.getMaterialType = function ( materialIndex ) {
+	GLTFMaterialsClearcoatExtension.prototype.getMaterialType = function ( /* materialIndex */ ) {
 
 		return THREE.MeshPhysicalMaterial;
 
@@ -1466,10 +1470,15 @@ THREE.GLTFLoader = ( function () {
 		// Use an ImageBitmapLoader if imageBitmaps are supported. Moves much of the
 		// expensive work of uploading a texture to the GPU off the main thread.
 		if ( this.useImageBitmap ) {
+
 			this.textureLoader = new THREE.ImageBitmapLoader( this.options.manager );
+
 		} else {
+
 			this.textureLoader = new THREE.TextureLoader( this.options.manager );
+
 		}
+
 		this.textureLoader.setCrossOrigin( this.options.crossOrigin );
 
 		this.fileLoader = new THREE.FileLoader( this.options.manager );
@@ -2233,7 +2242,7 @@ THREE.GLTFLoader = ( function () {
 
 	};
 
-	GLTFParser.prototype.getMaterialType = function ( materialIndex ) {
+	GLTFParser.prototype.getMaterialType = function ( /* materialIndex */ ) {
 
 		return THREE.MeshStandardMaterial;
 

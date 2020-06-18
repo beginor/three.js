@@ -12,6 +12,7 @@ import {
 	Box3,
 	BufferAttribute,
 	BufferGeometry,
+	CanvasTexture,
 	ClampToEdgeWrapping,
 	Color,
 	DirectionalLight,
@@ -19,6 +20,7 @@ import {
 	FileLoader,
 	FrontSide,
 	Group,
+	ImageBitmapLoader,
 	InterleavedBuffer,
 	InterleavedBufferAttribute,
 	Interpolant,
@@ -80,7 +82,11 @@ var GLTFLoader = ( function () {
 		this.ddsLoader = null;
 
 		this.pluginCallbacks = [];
-		this.register( function ( parser ) { return new GLTFMaterialsClearcoatExtension( parser ); } );
+		this.register( function ( parser ) {
+
+			return new GLTFMaterialsClearcoatExtension( parser );
+
+		} );
 
 	}
 
@@ -180,7 +186,7 @@ var GLTFLoader = ( function () {
 
 		register: function ( callback ) {
 
-			if ( this.pluginCallbacks.indexOf( callback ) === -1 ) {
+			if ( this.pluginCallbacks.indexOf( callback ) === - 1 ) {
 
 				this.pluginCallbacks.push( callback );
 
@@ -192,7 +198,7 @@ var GLTFLoader = ( function () {
 
 		unregister: function ( callback ) {
 
-			if ( this.pluginCallbacks.indexOf( callback ) !== -1 ) {
+			if ( this.pluginCallbacks.indexOf( callback ) !== - 1 ) {
 
 				this.pluginCallbacks.splice( this.pluginCallbacks.indexOf( callback ), 1 );
 
@@ -531,7 +537,7 @@ var GLTFLoader = ( function () {
 
 	}
 
-	GLTFMaterialsClearcoatExtension.prototype.getMaterialType = function ( materialIndex ) {
+	GLTFMaterialsClearcoatExtension.prototype.getMaterialType = function ( /* materialIndex */ ) {
 
 		return MeshPhysicalMaterial;
 
@@ -1527,7 +1533,20 @@ var GLTFLoader = ( function () {
 		// BufferGeometry caching
 		this.primitiveCache = {};
 
-		this.textureLoader = new TextureLoader( this.options.manager );
+		this.useImageBitmap = typeof createImageBitmap !== 'undefined';
+
+		// Use an ImageBitmapLoader if imageBitmaps are supported. Moves much of the
+		// expensive work of uploading a texture to the GPU off the main thread.
+		if ( this.useImageBitmap ) {
+
+			this.textureLoader = new ImageBitmapLoader( this.options.manager );
+
+		} else {
+
+			this.textureLoader = new TextureLoader( this.options.manager );
+
+		}
+
 		this.textureLoader.setCrossOrigin( this.options.crossOrigin );
 
 		this.fileLoader = new FileLoader( this.options.manager );
@@ -2002,6 +2021,7 @@ var GLTFLoader = ( function () {
 		var parser = this;
 		var json = this.json;
 		var options = this.options;
+		var useImageBitmap = this.useImageBitmap;
 		var textureLoader = this.textureLoader;
 
 		var URL = self.URL || self.webkitURL;
@@ -2056,7 +2076,19 @@ var GLTFLoader = ( function () {
 
 			return new Promise( function ( resolve, reject ) {
 
-				loader.load( resolveURL( sourceURI, options.path ), resolve, undefined, reject );
+				var onLoad = resolve;
+
+				if ( useImageBitmap ) {
+
+					onLoad = function ( imageBitmap ) {
+
+						resolve( new CanvasTexture( imageBitmap ) );
+
+					};
+
+				}
+
+				loader.load( resolveURL( sourceURI, options.path ), onLoad, undefined, reject );
 
 			} );
 
@@ -2278,7 +2310,7 @@ var GLTFLoader = ( function () {
 
 	};
 
-	GLTFParser.prototype.getMaterialType = function ( materialIndex ) {
+	GLTFParser.prototype.getMaterialType = function ( /* materialIndex */ ) {
 
 		return MeshStandardMaterial;
 
