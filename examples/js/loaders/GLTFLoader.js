@@ -2010,7 +2010,7 @@ THREE.GLTFLoader = ( function () {
 
 				var onLoad = resolve;
 
-				if ( useImageBitmap ) {
+				if ( loader.isImageBitmapLoader === true ) {
 
 					onLoad = function ( imageBitmap ) {
 
