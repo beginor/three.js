@@ -308,7 +308,7 @@ function WebGLRenderer( parameters ) {
 		morphtargets = new WebGLMorphtargets( _gl );
 		programCache = new WebGLPrograms( _this, extensions, capabilities );
 		materials = new WebGLMaterials( properties );
-		renderLists = new WebGLRenderLists();
+		renderLists = new WebGLRenderLists( properties );
 		renderStates = new WebGLRenderStates();
 
 		background = new WebGLBackground( _this, state, objects, _premultipliedAlpha );
@@ -655,8 +655,6 @@ function WebGLRenderer( parameters ) {
 	function releaseMaterialProgramReference( material ) {
 
 		const programInfo = properties.get( material ).program;
-
-		material.program = undefined;
 
 		if ( programInfo !== undefined ) {
 
@@ -1545,7 +1543,6 @@ function WebGLRenderer( parameters ) {
 			materialProperties.program = program;
 			materialProperties.uniforms = parameters.uniforms;
 			materialProperties.outputEncoding = parameters.outputEncoding;
-			material.program = program;
 
 		}
 
