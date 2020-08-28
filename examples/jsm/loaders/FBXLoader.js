@@ -652,6 +652,7 @@ var FBXLoader = ( function () {
 						break;
 
 					case 'TransparentColor':
+					case 'TransparencyFactor':
 						parameters.alphaMap = scope.getTexture( textureMap, child.ID );
 						parameters.transparent = true;
 						break;
